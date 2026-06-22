@@ -19,29 +19,127 @@ struct HomeView: View {
         }
     }
 }
-
+/*
+ScoreView should be the only one able to modify scores
+ServeView has only read access to scores
+*/
 struct BadmintonView: View {
+    @State private var scoreA: Int = 0
+    @State private var scoreB: Int = 0
+
     var body: some View {
         NavigationStack {
             NavigationLink("Singles") {
-                ServeView(isDoubles: false)
+                TabView {
+                    ServeView(
+                        isDoubles: false,
+                        scoreA: scoreA,
+                        scoreB: scoreB
+                    )
+                    ScoreView(
+                        scoreA: $scoreA,
+                        scoreB: $scoreB
+                    )
+                }
             }
             NavigationLink("Doubles") {
-                ServeView(isDoubles: true)
+                TabView {
+                    ServeView(
+                        isDoubles: false,
+                        scoreA: scoreA,
+                        scoreB: scoreB
+                    )
+                    ScoreView(
+                        scoreA: $scoreA,
+                        scoreB: $scoreB
+                    )
+                }
             }
         }
     }
 }
 
+enum Team {
+    case teamA
+    case teamB
+}
+
+enum Parity {
+    case left
+    case right
+}
+
+struct Player {
+    // distinguish what team a player is on
+    let team: Team
+    // distinguish what side the player is on
+    var side: Parity
+}
+
+// struct GameState {
+//     var scoreA = 0
+//     var scoreB = 0
+//     var servingTeam: Team = teamA
+// }
+
+func pointWon(by winningTeam: Team) {
+    let previousServingTeam = servingTeam
+
+    // 1. Update score
+    if winningTeam == .a {
+        scoreA += 1
+    } else {
+        scoreB += 1
+    }
+
+    // 2. Update server logic
+    if winningTeam != previousServingTeam {
+        servingTeam = winningTeam
+
+        // New serving team chooses server based on score parity
+        updateServerByScoreParity()
+    } else {
+        // Same team scored while serving
+        switchServerSide()
+    }
+
+    // 3. Check game over
+    if isGameOver {
+        resetGame()
+    }
+}
+
 struct ServeView: View {
     let isDoubles: Bool
+    let scoreA: Int 
+    let scoreB: Int
 
     var body: some View {
         GeometryReader { geo in 
             let w = geo.size.width
             let h = geo.size.height
             ZStack {
-                var 
+                // logic should be:
+                // score starts at 0 - 0
+                // indicate which team/player serves first
+                // then mark the player somehow to indicate they're serving
+                // what are the criteria for winning a game?
+                // score >= 21 and difference = 2 or score = 30
+                // scoreA is >= 21 and scoreA - scoreB = 2 or scoreB is >= 21 and scoreB - scoreA = 2 or (scoreA or scoreB = 30)
+                // while !(max(scoreA, scoreB) >= 21 && abs(scoreA - scoreB) >= 2) && !(max(scoreA, scoreB) == 30)
+                    // we then await a score change
+                    // if the team that wasn't serving scores a point
+                    //      the server becomes the one on that team that matches the parity of the score
+                    // else 
+                    //      server and partner switch sides of the court
+                // reset score to 0 - 0
+                var p1: Player(team: teamA, side: right)
+                var p2: Player(team: teamA, side: left)
+                var p3: Player(team: teamB, side: left)
+                var p4: Player(team: teamB, side: right)
+                var scoreA = 0
+                var scoreB = 0
+
                 Path { path in
                     // Draws the opponent service lines
                     path.move(to: CGPoint(x: 0, y: 0.3 * h))
@@ -95,12 +193,13 @@ struct ServeView: View {
 }
 
 struct ScoreView: View {
+    @Binding var scoreA: Int
+    @Binding var scoreB: Int
+
     var body: some View {
-        ZStack {
-            Rectangle()
-            Rectangle()
-            Rectangle()
-            Rectangle()
+        VStack {
+            Button("\(scoreA)")
+            Button("\(scoreB)")
         }
     }
 }
