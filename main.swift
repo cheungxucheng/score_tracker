@@ -24,8 +24,7 @@ ScoreView should be the only one able to modify scores
 ServeView has only read access to scores
 */
 struct BadmintonView: View {
-    @State private var scoreA: Int = 0
-    @State private var scoreB: Int = 0
+    @State private var game: GameState
 
     var body: some View {
         NavigationStack {
@@ -33,12 +32,10 @@ struct BadmintonView: View {
                 TabView {
                     ServeView(
                         isDoubles: false,
-                        scoreA: scoreA,
-                        scoreB: scoreB
+                        game: game
                     )
                     ScoreView(
-                        scoreA: $scoreA,
-                        scoreB: $scoreB
+                        game: $game
                     )
                 }
             }
@@ -46,12 +43,10 @@ struct BadmintonView: View {
                 TabView {
                     ServeView(
                         isDoubles: false,
-                        scoreA: scoreA,
-                        scoreB: scoreB
+                        game: game
                     )
                     ScoreView(
-                        scoreA: $scoreA,
-                        scoreB: $scoreB
+                        game: $game
                     )
                 }
             }
@@ -76,11 +71,14 @@ struct Player {
     var side: Parity
 }
 
-// struct GameState {
-//     var scoreA = 0
-//     var scoreB = 0
-//     var servingTeam: Team = teamA
-// }
+struct GameState {
+    var scoreA = 0
+    var scoreB = 0
+    var servingTeam: Team = teamA
+    var gameNum = 1
+    var firstGame: String
+    var secondGame: String
+}
 
 func pointWon(by winningTeam: Team) {
     let previousServingTeam = servingTeam
@@ -111,8 +109,7 @@ func pointWon(by winningTeam: Team) {
 
 struct ServeView: View {
     let isDoubles: Bool
-    let scoreA: Int 
-    let scoreB: Int
+    let game: GameState
 
     var body: some View {
         GeometryReader { geo in 
@@ -193,13 +190,66 @@ struct ServeView: View {
 }
 
 struct ScoreView: View {
-    @Binding var scoreA: Int
-    @Binding var scoreB: Int
+    @Binding var game: GameState
 
     var body: some View {
-        VStack {
-            Button("\(scoreA)")
-            Button("\(scoreB)")
+        GeometryReader { geo in
+            VStack(spacing: 4) {
+                Text("Game \(game.gameNum) \(game.firstGame) \(game.secondGame)")
+                .font(.caption2)
+                // text color
+                .foregroundStyle(.black)
+                // width of text fills display
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 3)
+                .background(.gray)
+                .clipShape(Capsule())
+
+                // think about what it would mean to implement an undo and redo button.
+                // how would i track the previous increments?
+                // how would i track the undid increments?
+                // why use this versus a decrement feature?
+                // decrement vs undo/redo action
+                // // decrement makes it so that score is adjustable
+                // // effectively the same action, but its more that undoing and redoing 
+                // // requires a history of score changes
+                // // the end result is the same though. in what scenario would i want to keep a history?
+                // // KISS
+                // ok, so we just do a decrement feature instead
+                ZStack {
+                    // Apple has a symbol/emoji thing that i can use for the undo and redo buttons
+                    // undo button should lie on the edge between two sides and on the left
+                    Button {
+
+                    }
+                    // redo button should lie on the edge between two sides and on the right
+                    Button {
+
+                    }
+                    VStack(spacing: 0) {
+                        Button {
+                            game.scoreA += 1
+                        } label: {
+                            Text("\(game.scoreA)")
+                                .font(.largeTitle)
+                                .frame(maxWidth: .infinity,
+                                    maxHeight: .infinity)
+                        }
+                        .background(.red)
+                        Button {
+                            game.scoreB += 1
+                        } label: {
+                            Text("\(game.scoreB)")
+                                .font(.largeTitle)
+                                .frame(maxWidth: .infinity,
+                                    maxHeight: .infinity)
+                        }
+                        .background(.blue)
+                    }
+                    .frame(maxWidth: .infinity,
+                        maxHeight: .infinity)
+                }
+            }
         }
     }
 }
