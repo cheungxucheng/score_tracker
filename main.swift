@@ -216,39 +216,49 @@ struct ScoreView: View {
                 // // the end result is the same though. in what scenario would i want to keep a history?
                 // // KISS
                 // ok, so we just do a decrement feature instead
-                ZStack {
-                    // Apple has a symbol/emoji thing that i can use for the undo and redo buttons
-                    // undo button should lie on the edge between two sides and on the left
-                    Button {
-
-                    }
-                    // redo button should lie on the edge between two sides and on the right
-                    Button {
-
-                    }
-                    VStack(spacing: 0) {
+                // each side needs its own increment and decrement button
+                // four buttons 
+                VStack(spacing: 0) {
+                    HStack() {
+                        Button {
+                            if (game.scoreA > 0) {
+                                game.scoreA -= 1
+                            }
+                        } label: {
+                           Image(systemName: "minus") 
+                        }
+                        Text("\(game.scoreA)")
+                                .font(.largeTitle)
                         Button {
                             game.scoreA += 1
                         } label: {
-                            Text("\(game.scoreA)")
-                                .font(.largeTitle)
-                                .frame(maxWidth: .infinity,
-                                    maxHeight: .infinity)
+                           Image(systemName: "plus") 
                         }
-                        .background(.red)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(.red)
+                    
+                    HStack() {
+                        Button {
+                            if (game.scoreB > 0) {
+                                game.scoreB -= 1
+                            }
+                        } label: {
+                           Image(systemName: "minus") 
+                        }
+                        Text("\(game.scoreB)")
+                                .font(.largeTitle)
                         Button {
                             game.scoreB += 1
                         } label: {
-                            Text("\(game.scoreB)")
-                                .font(.largeTitle)
-                                .frame(maxWidth: .infinity,
-                                    maxHeight: .infinity)
+                           Image(systemName: "plus") 
                         }
-                        .background(.blue)
                     }
-                    .frame(maxWidth: .infinity,
-                        maxHeight: .infinity)
+                    .background(.blue)
                 }
+                .frame(maxWidth: .infinity,
+                    maxHeight: .infinity)
             }
         }
     }
