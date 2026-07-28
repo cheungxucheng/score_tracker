@@ -42,7 +42,7 @@ struct BadmintonView: View {
             NavigationLink("Doubles") {
                 TabView {
                     ServeView(
-                        isDoubles: false,
+                        isDoubles: true,
                         game: game
                     )
                     ScoreView(
@@ -71,39 +71,77 @@ struct Player {
     var side: Parity
 }
 
+// changed to store methods within gamestate
 struct GameState {
     var scoreA = 0
     var scoreB = 0
-    var servingTeam: Team = teamA
+    var servingTeam: Team = .teamA
     var gameNum = 1
-    var firstGame: String
-    var secondGame: String
-}
+    var firstGame = ""
+    var secondGame = ""
 
-func pointWon(by winningTeam: Team) {
-    let previousServingTeam = servingTeam
+    var isGameOver: Bool {
+        let leadingScore = max(scoreA, scoreB)
 
-    // 1. Update score
-    if winningTeam == .a {
-        scoreA += 1
-    } else {
-        scoreB += 1
+        return leadingScore == 30 ||
+            (leadingScore >= 21 &&
+             abs(scoreA - scoreB) >= 2)
     }
 
-    // 2. Update server logic
-    if winningTeam != previousServingTeam {
-        servingTeam = winningTeam
+    mutating func pointWon(by winningTeam: Team) {
+        incrementScore(for: winningTeam)
+        updateService(afterPointWonBy: winningTeam)
 
-        // New serving team chooses server based on score parity
-        updateServerByScoreParity()
-    } else {
-        // Same team scored while serving
-        switchServerSide()
+        if isGameOver {
+            finishGame()
+        }
     }
 
-    // 3. Check game over
-    if isGameOver {
-        resetGame()
+    private mutating func incrementScore(for team: Team) {
+        switch team {
+        case .teamA:
+            scoreA += 1
+
+        case .teamB:
+            scoreB += 1
+        }
+    }
+
+    private mutating func updateService(
+        afterPointWonBy winningTeam: Team
+    ) {
+        if winningTeam != servingTeam {
+            servingTeam = winningTeam
+            selectServerUsingScoreParity(for: winningTeam)
+        } else {
+            switchPlayerSides(for: winningTeam)
+        }
+    }
+
+    private mutating func selectServerUsingScoreParity(
+        for team: Team
+    ) {
+        // Add server selection logic here.
+    }
+
+    private mutating func switchPlayerSides(
+        for team: Team
+    ) {
+        // Add doubles position-switching logic here.
+    }
+
+    private mutating func finishGame() {
+        let result = "\(scoreA)-\(scoreB)"
+
+        if gameNum == 1 {
+            firstGame = result
+        } else if gameNum == 2 {
+            secondGame = result
+        }
+
+        scoreA = 0
+        scoreB = 0
+        gameNum += 1
     }
 }
 
@@ -130,10 +168,10 @@ struct ServeView: View {
                     // else 
                     //      server and partner switch sides of the court
                 // reset score to 0 - 0
-                var p1: Player(team: teamA, side: right)
-                var p2: Player(team: teamA, side: left)
-                var p3: Player(team: teamB, side: left)
-                var p4: Player(team: teamB, side: right)
+                var p1: Player(team: .teamA, side: .right)
+                var p2: Player(team: .teamA, side: .left)
+                var p3: Player(team: .teamB, side: .left)
+                var p4: Player(team: .teamB, side: .right)
                 var scoreA = 0
                 var scoreB = 0
 
@@ -190,7 +228,10 @@ struct ServeView: View {
 }
 
 struct ScoreView: View {
-    @Binding var game: GameState
+    @Binding var game: GameState {
+        firstGame: "",
+        secondGame: ""
+    }
 
     var body: some View {
         GeometryReader { geo in
