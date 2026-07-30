@@ -72,6 +72,12 @@ struct Player {
 }
 
 // changed to store methods within gamestate
+// why? 
+// well, even when we're just changing the score
+// there are lots of variables that depend on the score
+// we encapsulate it all in game state so that when score is updated, everything else updates
+// that way the logic for buttons is much simpler
+// also mutating is needed because struct functions are read only by default in swift
 struct GameState {
     var scoreA = 0
     var scoreB = 0
