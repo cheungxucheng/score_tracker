@@ -24,32 +24,18 @@ ScoreView should be the only one able to modify scores
 ServeView has only read access to scores
 */
 struct BadmintonView: View {
-    @State private var game: GameState
+    @State private var game = GameState()
 
     var body: some View {
-        NavigationStack {
-            NavigationLink("Singles") {
-                TabView {
-                    ServeView(
-                        isDoubles: false,
-                        game: game
-                    )
-                    ScoreView(
-                        game: $game
-                    )
-                }
-            }
-            NavigationLink("Doubles") {
-                TabView {
-                    ServeView(
-                        isDoubles: true,
-                        game: game
-                    )
-                    ScoreView(
-                        game: $game
-                    )
-                }
-            }
+        TabView {
+            ServeView(
+                isDoubles: true,
+                game: game
+            )
+
+            ScoreView(
+                game: $game
+            )
         }
     }
 }
@@ -156,157 +142,170 @@ struct ServeView: View {
     let game: GameState
 
     var body: some View {
-        GeometryReader { geo in 
+        GeometryReader { geo in
             let w = geo.size.width
             let h = geo.size.height
+
             ZStack {
-                // logic should be:
-                // score starts at 0 - 0
-                // indicate which team/player serves first
-                // then mark the player somehow to indicate they're serving
-                // what are the criteria for winning a game?
-                // score >= 21 and difference = 2 or score = 30
-                // scoreA is >= 21 and scoreA - scoreB = 2 or scoreB is >= 21 and scoreB - scoreA = 2 or (scoreA or scoreB = 30)
-                // while !(max(scoreA, scoreB) >= 21 && abs(scoreA - scoreB) >= 2) && !(max(scoreA, scoreB) == 30)
-                    // we then await a score change
-                    // if the team that wasn't serving scores a point
-                    //      the server becomes the one on that team that matches the parity of the score
-                    // else 
-                    //      server and partner switch sides of the court
-                // reset score to 0 - 0
-                var p1: Player(team: .teamA, side: .right)
-                var p2: Player(team: .teamA, side: .left)
-                var p3: Player(team: .teamB, side: .left)
-                var p4: Player(team: .teamB, side: .right)
-                var scoreA = 0
-                var scoreB = 0
+                courtLines(width: w, height: h)
 
-                Path { path in
-                    // Draws the opponent service lines
-                    path.move(to: CGPoint(x: 0, y: 0.3 * h))
-                    path.addLine(to: CGPoint(x: w, y: 0.3 * h))
+                opponentPlayers(width: w, height: h)
 
-                    path.move(to: CGPoint(x: 0.5 * w, y: 0))
-                    path.addLine(to: CGPoint(x: 0.5 * w, y: 0.3 * h))
+                userPlayers(width: w, height: h)
 
-                    // Draws the user's service lines
-                    path.move(to: CGPoint(x: 0, y: 0.7 * h))
-                    path.addLine(to: CGPoint(x: w, y: 0.7 * h))
-
-                    path.move(to: CGPoint(x: 0.5 * w, y: h))
-                    path.addLine(to: CGPoint(x: 0.5 * w, y: 0.7 * h))
-                }
-                .stroke(.white, lineWidth: 7)
-
-                // Player representations
-
-                // Opponent team
-                RoundedRectangle()
-                    .fill(.red)
-                    .frame(width: 0.2 * h, height: 0.2 * h)
-                    .position(x: 0.25 * w, y: 0.15 * h)
-
-                if (isDoubles) {
-                    RoundedRectangle()
-                        .fill(.clear)
-                        .stroke(.red, lineWidth: 7)
-                        .frame(width: 0.2 * h, height: 0.2 * h)
-                        .position(x: 0.75 * w, y: 0.15 * h)
-                }
-                
-                // User team
-                Circle()
-                    .fill(.blue)
-                    .frame(width: 0.2 * h, height: 0.2 * h)
-                    .position(x: 0.25 * w, y: 0.85 * h)
-
-                if (isDoubles) {
-                    Circle()
-                        .fill(.clear)
-                        .stroke(.blue, lineWidth: 7)
-                        .frame(width: 0.2 * h, height: 0.2 * h)
-                        .position(x: 0.75 * w, y: 0.85 * h)
-                }
+                servingIndicator(width: w, height: h)
             }
             .background(.green)
         }
     }
 }
 
-struct ScoreView: View {
-    @Binding var game: GameState {
-        firstGame: "",
-        secondGame: ""
+@ViewBuilder
+@ViewBuilder
+private func courtLines(
+    width: CGFloat,
+    height: CGFloat
+) -> some View {
+    Path { path in
+        // Opponent short service line
+        path.move(to: CGPoint(x: 0, y: 0.3 * height))
+        path.addLine(to: CGPoint(x: width, y: 0.3 * height))
+
+        // Opponent center line
+        path.move(to: CGPoint(x: 0.5 * width, y: 0))
+        path.addLine(to: CGPoint(x: 0.5 * width, y: 0.3 * height))
+
+        // User short service line
+        path.move(to: CGPoint(x: 0, y: 0.7 * height))
+        path.addLine(to: CGPoint(x: width, y: 0.7 * height))
+
+        // User center line
+        path.move(to: CGPoint(x: 0.5 * width, y: height))
+        path.addLine(to: CGPoint(x: 0.5 * width, y: 0.7 * height))
     }
+    .stroke(.white, lineWidth: 7)
+}
+
+@ViewBuilder
+private func userPlayers(width: CGFloat, height: CGFloat) -> some View {
+    Circle()
+        .fill(.blue)
+        .frame(width: 0.2 * height, height: 0.2 * height)
+        .position(x: 0.25 * width, y: 0.85 * height)
+
+    if isDoubles {
+        Circle()
+            .stroke(.blue, lineWidth: 7)
+            .frame(width: 0.2 * height, height: 0.2 * height)
+            .position(x: 0.75 * width, y: 0.85 * height)
+    }
+}
+
+@ViewBuilder
+private func opponentPlayers(width: CGFloat, height: CGFloat) -> some View {
+    RoundedRectangle(cornerRadius: 4)
+        .fill(.red)
+        .frame(width: 0.2 * height, height: 0.2 * height)
+        .position(x: 0.25 * width, y: 0.15 * height)
+
+    if isDoubles {
+        RoundedRectangle(cornerRadius: 4)
+            .stroke(.red, lineWidth: 7)
+            .frame(width: 0.2 * height, height: 0.2 * height)
+            .position(x: 0.75 * width, y: 0.15 * height)
+    }
+}
+
+@ViewBuilder
+private func servingIndicator(
+    width: CGFloat,
+    height: CGFloat
+) -> some View {
+    if game.servingTeam == .teamA {
+        Circle()
+            .stroke(.yellow, lineWidth: 3)
+            .frame(width: 40, height: 40)
+            .position(
+                x: width * 0.25,
+                y: height * 0.85
+            )
+    } else {
+        RoundedRectangle(cornerRadius: 4)
+            .stroke(.yellow, lineWidth: 3)
+            .frame(width: 40, height: 40)
+            .position(
+                x: width * 0.25,
+                y: height * 0.15
+            )
+    }
+}
+
+struct ScoreView: View {
+    // a binding is essentially a pointer to an outside value
+    @Binding var game: GameState
 
     var body: some View {
-        GeometryReader { geo in
-            VStack(spacing: 4) {
-                Text("Game \(game.gameNum) \(game.firstGame) \(game.secondGame)")
+        VStack(spacing: 4) {
+            Text(gameHeader)
                 .font(.caption2)
-                // text color
                 .foregroundStyle(.black)
-                // width of text fills display
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 3)
                 .background(.gray)
                 .clipShape(Capsule())
 
-                // think about what it would mean to implement an undo and redo button.
-                // how would i track the previous increments?
-                // how would i track the undid increments?
-                // why use this versus a decrement feature?
-                // decrement vs undo/redo action
-                // // decrement makes it so that score is adjustable
-                // // effectively the same action, but its more that undoing and redoing 
-                // // requires a history of score changes
-                // // the end result is the same though. in what scenario would i want to keep a history?
-                // // KISS
-                // ok, so we just do a decrement feature instead
-                // each side needs its own increment and decrement button
-                // four buttons 
-                VStack(spacing: 0) {
-                    HStack() {
-                        Button {
-                            if (game.scoreA > 0) {
-                                game.scoreA -= 1
-                            }
-                        } label: {
-                           Image(systemName: "minus") 
-                        }
-                        Text("\(game.scoreA)")
-                                .font(.largeTitle)
-                        Button {
-                            game.scoreA += 1
-                        } label: {
-                           Image(systemName: "plus") 
-                        }
+            VStack(spacing: 0) {
+                scoreRow(
+                    score: game.scoreA,
+                    color: .red,
+                    onDecrement: {
+                        game.removePoint(from: .teamA)
+                    },
+                    onIncrement: {
+                        game.pointWon(by: .teamA)
                     }
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(.red)
-                    
-                    HStack() {
-                        Button {
-                            if (game.scoreB > 0) {
-                                game.scoreB -= 1
-                            }
-                        } label: {
-                           Image(systemName: "minus") 
-                        }
-                        Text("\(game.scoreB)")
-                                .font(.largeTitle)
-                        Button {
-                            game.scoreB += 1
-                        } label: {
-                           Image(systemName: "plus") 
-                        }
+                )
+
+                scoreRow(
+                    score: game.scoreB,
+                    color: .blue,
+                    onDecrement: {
+                        game.removePoint(from: .teamB)
+                    },
+                    onIncrement: {
+                        game.pointWon(by: .teamB)
                     }
-                    .background(.blue)
-                }
-                .frame(maxWidth: .infinity,
-                    maxHeight: .infinity)
+                )
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+    }
+    private var gameHeader: String {
+        "Game \(game.gameNum) \(game.firstGame) \(game.secondGame)"
+    }
+
+    private func scoreRow(
+        score: Int,
+        color: Color,
+        onDecrement: @escaping () -> Void,
+        onIncrement: @escaping () -> Void
+    ) -> some View {
+        HStack {
+            Button(action: onDecrement) {
+                Image(systemName: "minus")
+            }
+
+            Text("\(score)")
+                .font(.largeTitle)
+                .frame(maxWidth: .infinity)
+
+            Button(action: onIncrement) {
+                Image(systemName: "plus")
             }
         }
+        .buttonStyle(.plain)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(.horizontal)
+        .background(color)
     }
 }
