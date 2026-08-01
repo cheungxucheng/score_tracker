@@ -65,12 +65,12 @@ struct Player {
 // that way the logic for buttons is much simpler
 // also mutating is needed because struct functions are read only by default in swift
 struct GameState {
-    var scoreA = 0
-    var scoreB = 0
-    var servingTeam: Team = .teamA
-    var gameNum = 1
-    var firstGame = ""
-    var secondGame = ""
+    private(set) var scoreA = 0
+    private(set) var scoreB = 0
+    private(set) var servingTeam: Team = .teamA
+    private(set) var gameNum = 1
+    private(set) var firstGame = ""
+    private(set) var secondGame = ""
 
     var isGameOver: Bool {
         let leadingScore = max(scoreA, scoreB)
@@ -135,6 +135,16 @@ struct GameState {
         scoreB = 0
         gameNum += 1
     }
+
+    mutating func removePoint(from team: Team) {
+    switch team {
+    case .teamA:
+        scoreA = max(0, scoreA - 1)
+
+    case .teamB:
+        scoreB = max(0, scoreB - 1)
+    }
+}
 }
 
 struct ServeView: View {
@@ -158,9 +168,62 @@ struct ServeView: View {
             .background(.green)
         }
     }
+    @ViewBuilder
+    private func userPlayers(width: CGFloat, height: CGFloat) -> some View {
+        Circle()
+            .fill(.blue)
+            .frame(width: 0.2 * height, height: 0.2 * height)
+            .position(x: 0.25 * width, y: 0.85 * height)
+
+        if isDoubles {
+            Circle()
+                .stroke(.blue, lineWidth: 7)
+                .frame(width: 0.2 * height, height: 0.2 * height)
+                .position(x: 0.75 * width, y: 0.85 * height)
+        }
+    }
+
+    @ViewBuilder
+    private func opponentPlayers(width: CGFloat, height: CGFloat) -> some View {
+        RoundedRectangle(cornerRadius: 4)
+            .fill(.red)
+            .frame(width: 0.2 * height, height: 0.2 * height)
+            .position(x: 0.25 * width, y: 0.15 * height)
+
+        if isDoubles {
+            RoundedRectangle(cornerRadius: 4)
+                .stroke(.red, lineWidth: 7)
+                .frame(width: 0.2 * height, height: 0.2 * height)
+                .position(x: 0.75 * width, y: 0.15 * height)
+        }
+    }
+
+    @ViewBuilder
+    private func servingIndicator(
+        width: CGFloat,
+        height: CGFloat
+    ) -> some View {
+        if game.servingTeam == .teamA {
+            Circle()
+                .stroke(.yellow, lineWidth: 3)
+                .frame(width: 40, height: 40)
+                .position(
+                    x: width * 0.25,
+                    y: height * 0.85
+                )
+        } else {
+            RoundedRectangle(cornerRadius: 4)
+                .stroke(.yellow, lineWidth: 3)
+                .frame(width: 40, height: 40)
+                .position(
+                    x: width * 0.25,
+                    y: height * 0.15
+                )
+        }
+    }
 }
 
-@ViewBuilder
+// Viewbuilder technically not needed for court lines, since it only returns one path?
 @ViewBuilder
 private func courtLines(
     width: CGFloat,
@@ -184,61 +247,9 @@ private func courtLines(
         path.addLine(to: CGPoint(x: 0.5 * width, y: 0.7 * height))
     }
     .stroke(.white, lineWidth: 7)
+    
 }
 
-@ViewBuilder
-private func userPlayers(width: CGFloat, height: CGFloat) -> some View {
-    Circle()
-        .fill(.blue)
-        .frame(width: 0.2 * height, height: 0.2 * height)
-        .position(x: 0.25 * width, y: 0.85 * height)
-
-    if isDoubles {
-        Circle()
-            .stroke(.blue, lineWidth: 7)
-            .frame(width: 0.2 * height, height: 0.2 * height)
-            .position(x: 0.75 * width, y: 0.85 * height)
-    }
-}
-
-@ViewBuilder
-private func opponentPlayers(width: CGFloat, height: CGFloat) -> some View {
-    RoundedRectangle(cornerRadius: 4)
-        .fill(.red)
-        .frame(width: 0.2 * height, height: 0.2 * height)
-        .position(x: 0.25 * width, y: 0.15 * height)
-
-    if isDoubles {
-        RoundedRectangle(cornerRadius: 4)
-            .stroke(.red, lineWidth: 7)
-            .frame(width: 0.2 * height, height: 0.2 * height)
-            .position(x: 0.75 * width, y: 0.15 * height)
-    }
-}
-
-@ViewBuilder
-private func servingIndicator(
-    width: CGFloat,
-    height: CGFloat
-) -> some View {
-    if game.servingTeam == .teamA {
-        Circle()
-            .stroke(.yellow, lineWidth: 3)
-            .frame(width: 40, height: 40)
-            .position(
-                x: width * 0.25,
-                y: height * 0.85
-            )
-    } else {
-        RoundedRectangle(cornerRadius: 4)
-            .stroke(.yellow, lineWidth: 3)
-            .frame(width: 40, height: 40)
-            .position(
-                x: width * 0.25,
-                y: height * 0.15
-            )
-    }
-}
 
 struct ScoreView: View {
     // a binding is essentially a pointer to an outside value
