@@ -40,6 +40,7 @@ struct BadmintonView: View {
     }
 }
 
+// team A is considered to be the user's team
 enum Team {
     case teamA
     case teamB
