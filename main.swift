@@ -72,6 +72,13 @@ struct GameState {
     private(set) var gameNum = 1
     private(set) var firstGame = ""
     private(set) var secondGame = ""
+    private(set) var serverNum = 0;
+    private(set) var players = [
+        Player(team: .teamA, side: .right),
+        Player(team: .teamA, side: .left),
+        Player(team: .teamB, side: .right),
+        Player(team: .teamB, side: .left)
+    ]
 
     var isGameOver: Bool {
         let leadingScore = max(scoreA, scoreB)
@@ -114,13 +121,53 @@ struct GameState {
     private mutating func selectServerUsingScoreParity(
         for team: Team
     ) {
-        // Add server selection logic here.
+        // the idea is is that we select the current server from the winning team
+        // based on the score parity. we can have an index into the player arr 
+        // represent who is currently serving.
+
+        // issue being, how do we tell what the score is based on the team?
+        // score is currently being tracked as two ints, scoreA and scoreB
+        // but just because its named score
+
+        // could do: if team = .teamA, check scoreA, vice versa
+
+        // if serving team is teamA then if the score is even then if 
+        if (team == .teamA) {
+            let desiredSide: Parity = (scoreA % 2 == 0) ? .right : .left
+
+            if (players[0].side == desiredSide) {
+                serverNum = 0;
+            }
+            else {
+                serverNum = 1;
+            }
+        }
+        else {
+            let desiredSide: Parity = (scoreB % 2 == 0) ? .right : .left
+
+            if (players[3].side == desiredSide) {
+                serverNum = 2;
+            }
+            else {
+                serverNum = 3;
+            }
+        }
     }
 
     private mutating func switchPlayerSides(
         for team: Team
     ) {
         // Add doubles position-switching logic here.
+        if (team == .teamA) {
+            let temp: Parity = players[0].side
+            players[0].side = players[1].side
+            players[1].side = temp
+        }
+        else {
+            let temp: Parity = players[2].side
+            players[3].side = players[3].side
+            players[3].side = temp
+        }
     }
 
     private mutating func finishGame() {
