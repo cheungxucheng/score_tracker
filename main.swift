@@ -72,7 +72,13 @@ struct GameState {
     private(set) var gameNum = 1
     private(set) var firstGame = ""
     private(set) var secondGame = ""
-    private(set) var serverNum = 0;
+    private(set) var serverNum = 0
+    /*
+    0 : A1 <- user (hopefully)
+    1 : A2
+    2 : B1
+    3 : B2
+    */
     private(set) var players = [
         Player(team: .teamA, side: .right),
         Player(team: .teamA, side: .left),
@@ -132,26 +138,14 @@ struct GameState {
         // could do: if team = .teamA, check scoreA, vice versa
 
         // if serving team is teamA then if the score is even then if 
-        if (team == .teamA) {
-            let desiredSide: Parity = (scoreA % 2 == 0) ? .right : .left
+        let score = team == .teamA ? scoreA : scoreB
+        let player1 = team == .teamA ? 0 : 2
+        let player2 = player1 + 1
 
-            if (players[0].side == desiredSide) {
-                serverNum = 0;
-            }
-            else {
-                serverNum = 1;
-            }
-        }
-        else {
-            let desiredSide: Parity = (scoreB % 2 == 0) ? .right : .left
-
-            if (players[3].side == desiredSide) {
-                serverNum = 2;
-            }
-            else {
-                serverNum = 3;
-            }
-        }
+        let desiredSide: Parity =
+            score % 2 == 0 ? .right : .left 
+        
+        serverNum = players[player1].side == desiredSide ? player1 : player2
     }
 
     private mutating func switchPlayerSides(
@@ -165,7 +159,7 @@ struct GameState {
         }
         else {
             let temp: Parity = players[2].side
-            players[3].side = players[3].side
+            players[2].side = players[3].side
             players[3].side = temp
         }
     }
