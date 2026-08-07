@@ -10,6 +10,16 @@ struct Triangle: Shape {
         }
     }
 }
+
+@main
+struct ScoreTrackerApp: App {
+    var body: some Scene {
+        WindowGroup {
+            HomeView()
+        }
+    }
+}
+
 struct HomeView: View {
     var body: some View {
         NavigationStack {
