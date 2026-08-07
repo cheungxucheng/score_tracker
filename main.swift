@@ -11,7 +11,10 @@ struct Triangle: Shape {
     }
 }
 
-@main
+@main // the defined place where execution begins (every app needs)
+// App : tells swiftui this describes an app
+// body : declares the scenes
+// WindowGroup : creates the app's main window
 struct ScoreTrackerApp: App {
     var body: some Scene {
         WindowGroup {
