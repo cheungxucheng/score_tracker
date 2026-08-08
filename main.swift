@@ -186,10 +186,10 @@ struct GameState {
     private mutating func finishGame() {
         completedGames.append("\(scoreA)-\(scoreB)")
 
-        if (scoreA - scoreB == 2 || scoreA == 30) {
+        if (scoreA - scoreB >= 2 || scoreA == 30) {
             gamesWonA += 1
         }
-        else if (scoreB - scoreA == 2 && scoreB == 30) {
+        else if (scoreB - scoreA >= 2 && scoreB == 30) {
             gamesWonB += 1
         }
 
@@ -366,7 +366,7 @@ struct ScoreView: View {
         }
     }
     private var gameHeader: String {
-        "Game \(game.gameNum) \(game.firstGame) \(game.secondGame)"
+        "Game \(game.gameNum) \(game.completedGames[0]) \(game.completedGames[1])"
     }
 
     private func scoreRow(
