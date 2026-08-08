@@ -83,9 +83,11 @@ struct GameState {
     private(set) var scoreB = 0
     private(set) var servingTeam: Team = .teamA
     private(set) var gameNum = 1
-    private(set) var firstGame = ""
-    private(set) var secondGame = ""
+    // a collection(arr?) of completed game score strings
+    private(set) var completedGames: [String] = []
     private(set) var serverNum = 0
+    private(set) var gamesWonA = 0;
+    private(set) var gamesWonB = 0;
     /*
     0 : A1 <- user (hopefully)
     1 : A2
@@ -105,6 +107,10 @@ struct GameState {
         return leadingScore == 30 ||
             (leadingScore >= 21 &&
              abs(scoreA - scoreB) >= 2)
+    }
+
+    var isMatchOver: Bool {
+        return gamesWonA == 2 || gamesWonB == 2
     }
 
     mutating func pointWon(by winningTeam: Team) {
@@ -178,17 +184,30 @@ struct GameState {
     }
 
     private mutating func finishGame() {
-        let result = "\(scoreA)-\(scoreB)"
+        completedGames.append("\(scoreA)-\(scoreB)")
 
-        if gameNum == 1 {
-            firstGame = result
-        } else if gameNum == 2 {
-            secondGame = result
+        if (scoreA - scoreB == 2 || scoreA == 30) {
+            gamesWonA++
+        }
+        else if (scoreB - scoreA == 2 && scoreB == 30) {
+            gamesWonB++
         }
 
         scoreA = 0
         scoreB = 0
-        gameNum += 1
+        if (isMatchOver) {
+            finishMatch()
+        }
+        else {
+            gameNum++
+        }
+    }
+
+    mutating func finishMatch() { 
+        completedGames = []
+        gameNum = 1;
+        gamesWonA = 0
+        gamesWonB = 0
     }
 
     mutating func removePoint(from team: Team) {
