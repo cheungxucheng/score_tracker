@@ -187,10 +187,10 @@ struct GameState {
         completedGames.append("\(scoreA)-\(scoreB)")
 
         if (scoreA - scoreB == 2 || scoreA == 30) {
-            gamesWonA++
+            gamesWonA += 1
         }
         else if (scoreB - scoreA == 2 && scoreB == 30) {
-            gamesWonB++
+            gamesWonB += 1
         }
 
         scoreA = 0
@@ -199,7 +199,7 @@ struct GameState {
             finishMatch()
         }
         else {
-            gameNum++
+            gameNum += 1
         }
     }
 
