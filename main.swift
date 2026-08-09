@@ -189,7 +189,7 @@ struct GameState {
         if (scoreA - scoreB >= 2 || scoreA == 30) {
             gamesWonA += 1
         }
-        else if (scoreB - scoreA >= 2 && scoreB == 30) {
+        else if (scoreB - scoreA >= 2 || scoreB == 30) {
             gamesWonB += 1
         }
 
@@ -365,8 +365,11 @@ struct ScoreView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
+    // completedGames would crash if trying to access indices 0 and 1 at the start of the game
+    // since it is an empty array
     private var gameHeader: String {
-        "Game \(game.gameNum) \(game.completedGames[0]) \(game.completedGames[1])"
+        let results = game.completedGames.joined(separator: "  ")
+        return "Game \(game.gameNum) \(results)"
     }
 
     private func scoreRow(
