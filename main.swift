@@ -195,15 +195,12 @@ struct GameState {
 
         scoreA = 0
         scoreB = 0
-        if (isMatchOver) {
-            finishMatch()
-        }
-        else {
+        if (!isMatchOver) 
             gameNum += 1
         }
     }
 
-    mutating func finishMatch() { 
+    mutating func resetMatch() { 
         completedGames = []
         gameNum = 1;
         gamesWonA = 0
