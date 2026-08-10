@@ -195,7 +195,7 @@ struct GameState {
 
         scoreA = 0
         scoreB = 0
-        if (!isMatchOver) 
+        if (!isMatchOver) {
             gameNum += 1
         }
     }
