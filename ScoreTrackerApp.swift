@@ -71,6 +71,10 @@ struct Player {
     var side: Parity
 }
 
+// each snapshot contains certain information from the previous rally. we use snapshots instead of decrement/increment
+// since certain information gets updated on increment that decrement won't undo (gameNum, completedGames, gamesWon)
+// this also makes it easier if/when we implement the service tracking, as the snapshot will then contain things
+// like the court position and server etc...
 private struct GameSnapshot {
     let scoreA: Int
     let scoreB: Int
