@@ -71,6 +71,15 @@ struct Player {
     var side: Parity
 }
 
+private struct GameSnapshot {
+    let scoreA: Int
+    let scoreB: Int
+    let gameNum: Int
+    let completedGames: [String]
+    let gamesWonA: Int
+    let gamesWonB: Int
+}
+
 // changed to store methods within gamestate
 // why? 
 // well, even when we're just changing the score
@@ -88,6 +97,7 @@ struct GameState {
     // private(set) var serverNum = 0
     private(set) var gamesWonA = 0;
     private(set) var gamesWonB = 0;
+    private var history: [GameSnapshot] = []
     /*
     0 : A1 <- user (hopefully)
     1 : A2
@@ -113,14 +123,48 @@ struct GameState {
         return gamesWonA == 2 || gamesWonB == 2
     }
 
+    var canUndo: Bool {
+        !history.isEmpty
+    }
+
     mutating func pointWon(by winningTeam: Team) {
-        guard !isMatchOver else { return }
+        if isMatchOver {
+            return
+        }
+
+        saveSnapshot()
         incrementScore(for: winningTeam)
         // updateService(afterPointWonBy: winningTeam)
 
         if isGameOver {
             finishGame()
         }
+    }
+
+    private mutating func saveSnapshot() {
+        history.append(
+            GameSnapshot(
+                scoreA: scoreA,
+                scoreB: scoreB,
+                gameNum: gameNum,
+                completedGames: completedGames,
+                gamesWonA: gamesWonA,
+                gamesWonB: gamesWonB
+            )
+        )
+    }
+
+    mutating func undoLastPoint() {
+        guard let previous = history.popLast() else {
+            return
+        }
+
+        scoreA = previous.scoreA
+        scoreB = previous.scoreB
+        gameNum = previous.gameNum
+        completedGames = previous.completedGames
+        gamesWonA = previous.gamesWonA
+        gamesWonB = previous.gamesWonB
     }
 
     private mutating func incrementScore(for team: Team) {
@@ -208,17 +252,8 @@ struct GameState {
         gamesWonB = 0
         scoreA = 0
         scoreB = 0
+        history = []
     }
-
-    mutating func removePoint(from team: Team) {
-    switch team {
-    case .teamA:
-        scoreA = max(0, scoreA - 1)
-
-    case .teamB:
-        scoreB = max(0, scoreB - 1)
-    }
-}
 }
 
 // struct ServeView: View {
@@ -340,29 +375,34 @@ struct ScoreView: View {
                 .clipShape(Capsule())
 
             VStack(spacing: 0) {
-                scoreRow(
+                scoreButton(
+                    teamName: "Team A",
                     score: game.scoreA,
                     color: .red,
-                    onDecrement: {
-                        game.removePoint(from: .teamA)
-                    },
-                    onIncrement: {
+                    action: {
                         game.pointWon(by: .teamA)
                     }
                 )
 
-                scoreRow(
+                scoreButton(
+                    teamName: "Team B",
                     score: game.scoreB,
                     color: .blue,
-                    onDecrement: {
-                        game.removePoint(from: .teamB)
-                    },
-                    onIncrement: {
+                    action: {
                         game.pointWon(by: .teamB)
                     }
                 )
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+            Button {
+                game.undoLastPoint()
+            } label: {
+                Label("Undo", systemImage: "arrow.uturn.backward")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+            .disabled(!game.canUndo)
         }
     }
     // completedGames would crash if trying to access indices 0 and 1 at the start of the game
@@ -372,28 +412,27 @@ struct ScoreView: View {
         return "Game \(game.gameNum) \(results)"
     }
 
-    private func scoreRow(
+    private func scoreButton(
+        teamName: String,
         score: Int,
         color: Color,
-        onDecrement: @escaping () -> Void,
-        onIncrement: @escaping () -> Void
+        action: @escaping () -> Void
     ) -> some View {
-        HStack {
-            Button(action: onDecrement) {
-                Image(systemName: "minus")
-            }
+        Button(action: action) {
+            VStack(spacing: 2) {
+                Text(teamName)
+                    .font(.caption2)
 
-            Text("\(score)")
-                .font(.largeTitle)
-                .frame(maxWidth: .infinity)
-
-            Button(action: onIncrement) {
-                Image(systemName: "plus")
+                Text("\(score)")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
             }
+            .foregroundStyle(.white)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .contentShape(Rectangle())
+            .background(color)
         }
         .buttonStyle(.plain)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(.horizontal)
-        .background(color)
     }
 }
