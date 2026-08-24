@@ -9,6 +9,34 @@
 			<key>orderHint</key>
 			<integer>0</integer>
 		</dict>
+		<key>Score Tracker.xcscheme_^#shared#^_</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>1</integer>
+		</dict>
+	</dict>
+	<key>SuppressBuildableAutocreation</key>
+	<dict>
+		<key>FDAD4A13303253450066BE40</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>FDAD4A19303253450066BE40</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>FDAD4A283032534A0066BE40</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>FDAD4A323032534A0066BE40</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
 	</dict>
 </dict>
 </plist>
