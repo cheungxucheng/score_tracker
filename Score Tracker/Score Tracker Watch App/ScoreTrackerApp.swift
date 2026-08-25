@@ -553,7 +553,7 @@ struct MatchHistoryView: View {
                     Image(systemName: "trash")
                 }
                 // Disables interaction when this Boolean condition evaluates to true.
-                .disabled(!game.matchHistory.isEmpty)
+                .disabled(game.matchHistory.isEmpty)
                 // Adjusts visibility by choosing an opacity from the current state.
                 .opacity(game.hasActiveMatchProgress ? 0 : 1)
                 // Removes the control from assistive technologies when it is not meant to be available.
