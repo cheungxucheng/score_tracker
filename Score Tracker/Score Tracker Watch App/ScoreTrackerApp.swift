@@ -126,7 +126,6 @@ struct BadmintonView: View {
                 isPresented: $showDiscardConfirmation,
                 // Requests that the system show the dialog title.
                 titleVisibility: .visible
-            // Begins the scope or closure introduced by this line.
             ) {
                 // Creates a destructive dialog button and starts its action closure.
                 Button("Discard Match", role: .destructive) {
