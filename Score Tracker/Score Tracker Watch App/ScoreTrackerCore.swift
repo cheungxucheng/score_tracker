@@ -1,6 +1,15 @@
 // Imports Foundation types used here, including Date, UUID, UserDefaults, and JSON encoders.
 import Foundation
 
+// Match Length Selection
+enum NumGames: Int, CaseIterable, Identifiable {
+    case bo1 = 1
+    case bo3 = 3
+    case bo5 = 5
+    
+    var id: Int {self.rawValue}
+    var gamesNeededToWin: Int {(rawValue / 2)}
+}
 // Declares the two possible teams and adopts protocols for raw strings, persistence, iteration, and equality.
 enum Team: String, Codable, CaseIterable, Equatable {
     // Defines the first valid Team value.

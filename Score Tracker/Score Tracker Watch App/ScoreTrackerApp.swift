@@ -24,10 +24,15 @@ struct ScoreTrackerApp: App {
     }
 }
 
+#Preview() {
+    HomeView()
+}
 // Declares the HomeView value type; conforming to View makes it a SwiftUI screen or component.
 struct HomeView: View {
     // Stores view-owned mutable state and tells SwiftUI to refresh the view when the value changes.
     @State private var game = GameState()
+    @State private var numsGames: NumGames = .bo3
+
 
     // Defines the visual content for this SwiftUI view; `some View` hides the exact composed view type.
     var body: some View {
@@ -35,6 +40,22 @@ struct HomeView: View {
         NavigationView {
             // Creates a vertically scrolling, watchOS-styled list.
             List {
+                HStack() {
+                    Text("Best Of : ")
+                    
+                    Spacer()
+                    
+                    Picker("Best of :", selection: $numsGames) {
+                        ForEach(NumGames.allCases) { num in
+                            Text("\(num.rawValue)").tag(num)
+                        }
+                    }
+                    .pickerStyle(.wheel)
+                    .labelsHidden()
+                    .frame(width: 50, height: 50)
+                    .clipped()
+                }
+                
                 // Creates a tappable navigation row whose closure supplies the destination screen.
                 NavigationLink {
                     // Creates the scoring screen and passes a binding, indicated by `$`, to the shared game state.
@@ -634,6 +655,7 @@ private struct MatchHistoryRow: View {
         .accessibilityElement(children: .contain)
     }
 }
+
 
 // Declares a file-private Haptics namespace for related static functionality.
 private enum Haptics {
