@@ -181,13 +181,11 @@ struct GameState {
     private(set) var scoreA = 0
     // Stores Team B’s live score with a private setter.
     private(set) var scoreB = 0
-    // Stores the one-based current game number with a private setter.
     private(set) var gameNum = 1
+    private(set) var matchFormat: NumGames = .bo3
     // Stores completed game results while preventing outside code from mutating the array directly.
     private(set) var completedGames: [GameResult] = []
-    // Stores how many games Team A has won.
     private(set) var gamesWonA = 0
-    // Stores how many games Team B has won.
     private(set) var gamesWonB = 0
     // Stores the current lifecycle phase, initially allowing scoring.
     private(set) var matchPhase: MatchPhase = .playing
@@ -219,9 +217,7 @@ struct GameState {
         self.matchHistory = Array(
             // Loads history and keeps only the newest records up to the configured limit.
             persistence.load().suffix(max(1, matchHistoryLimit))
-        // Closes the surrounding initializer call or multiline argument list.
         )
-    // Closes the current Swift declaration, function, conditional, switch, or type scope.
     }
 
     // Declares a computed Boolean that applies badminton’s game-winning rules.

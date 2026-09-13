@@ -42,7 +42,7 @@ struct HomeView: View {
             List {
                 HStack() {
                     Text("Best Of : ")
-                    
+                        .font(.body)
                     Spacer()
                     
                     Picker("Best of :", selection: $numsGames) {
