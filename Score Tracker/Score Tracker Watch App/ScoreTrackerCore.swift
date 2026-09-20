@@ -234,21 +234,21 @@ struct GameState {
     // Declares a computed Boolean for a best-of-three match.
     var isMatchOver: Bool {
         // Returns true as soon as either team has won two games.
-        gamesWonA == 2 || gamesWonB == 2
+        gamesWonA == matchFormat.gamesNeededToWin || gamesWonB == matchFormat.gamesNeededToWin
     // Closes the current Swift declaration, function, conditional, switch, or type scope.
     }
 
     // Declares an optional computed winner because an unfinished match has no winner.
     var matchWinner: Team? {
         // Checks whether Team A has reached the two-game winning threshold.
-        if gamesWonA == 2 {
+        if gamesWonA == matchFormat.gamesNeededToWin {
             // Returns Team A as the match winner.
             return .teamA
         // Closes the current Swift declaration, function, conditional, switch, or type scope.
         }
 
         // Checks whether Team B has reached the two-game winning threshold.
-        if gamesWonB == 2 {
+        if gamesWonB == matchFormat.gamesNeededToWin {
             // Returns Team B as the match winner.
             return .teamB
         // Closes the current Swift declaration, function, conditional, switch, or type scope.
@@ -375,7 +375,7 @@ struct GameState {
     }
 
     // Declares the reset operation used to begin a completely fresh match.
-    mutating func startNewMatch() {
+    mutating func startNewMatch(format: NumGames) {
         // Resets this numeric match field to zero.
         scoreA = 0
         // Resets this numeric match field to zero.
@@ -392,13 +392,14 @@ struct GameState {
         undoHistory = []
         // Returns the lifecycle to the state that accepts scoring.
         matchPhase = .playing
-    // Closes the current Swift declaration, function, conditional, switch, or type scope.
+        
+        matchFormat = format
     }
 
     // Declares a convenience operation for abandoning active progress.
     mutating func discardCurrentMatch() {
         // Reuses the full reset logic rather than duplicating it.
-        startNewMatch()
+        startNewMatch(format: matchFormat)
     // Closes the current Swift declaration, function, conditional, switch, or type scope.
     }
 

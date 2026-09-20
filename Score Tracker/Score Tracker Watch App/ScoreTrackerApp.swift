@@ -32,7 +32,7 @@ struct HomeView: View {
     // Stores view-owned mutable state and tells SwiftUI to refresh the view when the value changes.
     @State private var game = GameState()
     @State private var numsGames: NumGames = .bo3
-
+    @State private var showingMatch = false
 
     // Defines the visual content for this SwiftUI view; `some View` hides the exact composed view type.
     var body: some View {
@@ -56,13 +56,20 @@ struct HomeView: View {
                     .clipped()
                 }
                 
-                // Creates a tappable navigation row whose closure supplies the destination screen.
-                NavigationLink {
-                    // Creates the scoring screen and passes a binding, indicated by `$`, to the shared game state.
-                    BadmintonView(game: $game)
+                Button {
+                    game.startNewMatch(format: numsGames)
+                    showingMatch = true
                 } label: {
                     // Creates a label that combines readable text with the named SF Symbol.
                     Label("Start Match", systemImage: "plus.circle.fill")
+                }
+                .background {
+                    NavigationLink(
+                        destination: BadmintonView(game: $game),
+                        isActive: $showingMatch
+                    ) {
+                        EmptyView()
+                    }
                 }
 
                 // Creates a tappable navigation row whose closure supplies the destination screen.
@@ -166,7 +173,7 @@ struct BadmintonView: View {
                             // Converts the finished match into a saved history record.
                             game.confirmCompletedMatch()
                             // Resets all active-match values for a new match.
-                            game.startNewMatch()
+                            game.startNewMatch(format: game.matchFormat)
                         // Supplies this argument or value and continues the surrounding multiline expression.
                         },
                         // Begins the callback that saves the result and exits the scoring screen.
@@ -174,7 +181,7 @@ struct BadmintonView: View {
                             // Converts the finished match into a saved history record.
                             game.confirmCompletedMatch()
                             // Resets all active-match values for a new match.
-                            game.startNewMatch()
+                            game.startNewMatch(format: game.matchFormat)
                             // Asks SwiftUI to close the currently presented or pushed screen.
                             dismiss()
                         }
