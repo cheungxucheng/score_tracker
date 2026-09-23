@@ -1,20 +1,13 @@
-// Imports SwiftUI, Apple’s framework for declaring the app’s user interface.
 import SwiftUI
 
-// Compiles the following code only when this source is being built for watchOS.
 #if os(watchOS)
 // Imports WatchKit so the app can use Apple Watch-specific APIs such as haptic feedback.
 import WatchKit
-// Ends the watchOS-only conditional-compilation section.
 #endif
 
-// Marks the following app type as the program’s entry point.
 @main
-// Declares the ScoreTrackerApp value type; conforming to View makes it a SwiftUI screen or component.
 struct ScoreTrackerApp: App {
-    // Defines the app’s scene hierarchy; `some Scene` hides the concrete scene type while preserving compile-time type safety.
     var body: some Scene {
-        // Creates the app’s main window scene and supplies its root view.
         WindowGroup {
             // WindowGroup is a type of scene that manages 1 <= app windows
             // Think of it as a container for the ui
@@ -27,18 +20,13 @@ struct ScoreTrackerApp: App {
 #Preview() {
     HomeView()
 }
-// Declares the HomeView value type; conforming to View makes it a SwiftUI screen or component.
 struct HomeView: View {
-    // Stores view-owned mutable state and tells SwiftUI to refresh the view when the value changes.
     @State private var game = GameState()
     @State private var numsGames: NumGames = .bo3
     @State private var showingMatch = false
 
-    // Defines the visual content for this SwiftUI view; `some View` hides the exact composed view type.
     var body: some View {
-        // Creates a navigation container so links can push new screens and display navigation titles.
         NavigationView {
-            // Creates a vertically scrolling, watchOS-styled list.
             List {
                 HStack() {
                     Text("Best Of : ")
@@ -72,33 +60,23 @@ struct HomeView: View {
                     }
                 }
 
-                // Creates a tappable navigation row whose closure supplies the destination screen.
                 NavigationLink {
-                    // Creates the history screen and passes it the same mutable game-state binding.
                     MatchHistoryView(game: $game)
                 } label: {
-                    // Creates a label that combines readable text with the named SF Symbol.
                     Label("Match History", systemImage: "clock.arrow.circlepath")
                 }
             }
-            // Sets the title that watchOS displays in this screen’s navigation area.
             .navigationTitle("Badminton")
         }
     }
 }
 
-// Declares the BadmintonView value type; conforming to View makes it a SwiftUI screen or component.
 struct BadmintonView: View {
-    // Receives a two-way reference to state owned by another view, so changes flow back to the owner.
     @Binding var game: GameState
-    // Reads a value supplied by SwiftUI’s environment; here it provides the action for dismissing this screen.
     @Environment(\.dismiss) private var dismiss
-    // Stores view-owned mutable state and tells SwiftUI to refresh the view when the value changes.
     @State private var showDiscardConfirmation = false
 
-    // Creates a computed binding that becomes true when the match is ready for confirmation.
     private var showMatchCompletion: Binding<Bool> {
-        // Constructs a custom two-way SwiftUI binding from explicit getter and setter closures.
         Binding(
             // The binding reads its Boolean value by evaluating this getter closure.
             get: { game.matchPhase == .awaitingConfirmation },
@@ -107,9 +85,7 @@ struct BadmintonView: View {
         )
     }
 
-    // Defines the visual content for this SwiftUI view; `some View` hides the exact composed view type.
     var body: some View {
-        // Creates the live score interface and gives it two-way access to the current game state.
         ScoreView(game: $game)
             // Hides the standard Back button while a match has progress, preventing accidental abandonment.
             .navigationBarBackButtonHidden(game.hasActiveMatchProgress)
@@ -127,16 +103,11 @@ struct BadmintonView: View {
             }
             // Attaches a confirmation dialog to the view.
             .confirmationDialog(
-                // Supplies the dialog’s title text.
                 "Discard the current match?",
-                // Binds dialog or sheet presentation to the specified Boolean binding.
                 isPresented: $showDiscardConfirmation,
-                // Requests that the system show the dialog title.
                 titleVisibility: .visible
             ) {
-                // Creates a destructive dialog button and starts its action closure.
                 Button("Discard Match", role: .destructive) {
-                    // Resets and abandons the current unsaved match.
                     game.discardCurrentMatch()
                     // Asks SwiftUI to close the currently presented or pushed screen.
                     dismiss()
@@ -145,62 +116,39 @@ struct BadmintonView: View {
                 // Creates a cancel button with an intentionally empty action because dismissal is automatic.
                 Button("Keep Playing", role: .cancel) {}
             } message: {
-                // Creates a SwiftUI text view from the supplied string or value.
                 Text("The unfinished match and its Undo history will be lost.")
             }
-            // Presents a modal sheet whenever the supplied binding becomes true.
             .sheet(isPresented: showMatchCompletion) {
-                // Safely unwraps the optional match winner and runs this block only when a winner exists.
                 if let winner = game.matchWinner {
                     // Creates the modal screen used to confirm and save a completed match.
                     MatchCompletionView(
-                        // Passes the unwrapped winning team into the completion screen.
                         winner: winner,
-                        // Passes all completed game results into the completion screen.
                         games: game.completedGames,
-                        // Passes whether an Undo operation is currently available.
                         canUndo: game.canUndo,
-                        // Begins the callback the completion screen invokes to undo the last point.
                         undo: {
-                            // Restores the game state saved immediately before the most recent point.
                             game.undoLastPoint()
-                            // Plays the haptic pattern associated with undoing an action.
                             Haptics.undo()
-                        // Supplies this argument or value and continues the surrounding multiline expression.
                         },
-                        // Begins the callback that saves the result and starts another match.
                         saveAndStartNew: {
-                            // Converts the finished match into a saved history record.
                             game.confirmCompletedMatch()
-                            // Resets all active-match values for a new match.
                             game.startNewMatch(format: game.matchFormat)
-                        // Supplies this argument or value and continues the surrounding multiline expression.
                         },
-                        // Begins the callback that saves the result and exits the scoring screen.
                         saveAndFinish: {
-                            // Converts the finished match into a saved history record.
                             game.confirmCompletedMatch()
-                            // Resets all active-match values for a new match.
                             game.startNewMatch(format: game.matchFormat)
-                            // Asks SwiftUI to close the currently presented or pushed screen.
                             dismiss()
                         }
                     )
-                    // Prevents swiping the completion sheet away without choosing an explicit action.
                     .interactiveDismissDisabled()
                 }
             }
     }
 }
 
-// Declares the ScoreView value type; conforming to View makes it a SwiftUI screen or component.
 struct ScoreView: View {
-    // Receives a two-way reference to state owned by another view, so changes flow back to the owner.
     @Binding var game: GameState
 
-    // Declares a computed, file-internal string used to summarize the scores of finished games.
     private var completedScores: String {
-        // Starts with the collection of games already completed in this match.
         game.completedGames
             // Transforms every collection element into the displayed value described by the key path or closure.
             .map(\.displayScore)
@@ -208,59 +156,36 @@ struct ScoreView: View {
             .joined(separator: "  ")
     }
 
-    // Defines the visual content for this SwiftUI view; `some View` hides the exact composed view type.
     var body: some View {
         // Layers the screen-level Undo wedge above the normal score interface.
         ZStack(alignment: .bottomTrailing) {
-            // Arranges the header and score panels vertically.
             VStack(spacing: 4) {
-                // Arranges the enclosed child views horizontally.
                 HStack(spacing: 6) {
-                    // Creates a SwiftUI text view from the supplied string or value.
                     Text("Game \(game.gameNum)")
-                    // Applies the specified semantic system font style.
                         .font(.caption2)
-                    // Changes the text weight to make it visually stronger.
                         .fontWeight(.semibold)
                     
-                    // Shows the completed-game summary only when that string contains content.
                     if !completedScores.isEmpty {
                         // Adds flexible empty space that pushes neighboring content apart.
                         Spacer(minLength: 2)
-                        // Creates a SwiftUI text view from the supplied string or value.
                         Text(completedScores)
-                        // Applies the specified semantic system font style.
                             .font(.caption2)
-                        // Limits this text to the specified number of rendered lines.
                             .lineLimit(1)
-                        // Allows the text to shrink to this fraction of its normal size before truncating.
                             .minimumScaleFactor(0.65)
                     }
                 }
-                // Sets the foreground color or material for this view and its descendants.
                 .foregroundStyle(.primary)
-                // Proposes size and alignment constraints for this view.
                 .frame(maxWidth: .infinity)
-                // Adds empty space around the view using the specified edges and amount.
                 .padding(.horizontal, 8)
-                // Adds empty space around the view using the specified edges and amount.
                 .padding(.vertical, 3)
-                // Draws the specified color or style behind the view’s current bounds.
                 .background(.gray.opacity(0.3))
-                // Clips everything drawn by the view to the supplied shape.
                 .clipShape(Capsule())
-                // Controls how this view’s children are grouped for assistive technologies.
                 .accessibilityElement(children: .combine)
                 
-                // Arranges the enclosed child views vertically.
                 VStack(spacing: 2) {
-                    // Calls the reusable helper that constructs one team’s score button.
                     scoreButton(
-                        // Passes the team represented by this score button.
                         team: .teamA,
-                        // Passes the current numeric score to display.
                         score: game.scoreA,
-                        // Passes the background color associated with this team.
                         color: .red
                     )
                     // Clips everything drawn by the view to the supplied shape.
