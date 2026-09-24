@@ -188,41 +188,28 @@ struct ScoreView: View {
                         score: game.scoreA,
                         color: .red
                     )
-                    // Clips everything drawn by the view to the supplied shape.
                     .clipShape(
-                        // Creates a rectangle with the given smooth corner radius.
                         RoundedRectangle(cornerRadius: 4, style: .continuous)
                     )
                     
-                    // Calls the reusable helper that constructs Team B's score button.
                     scoreButton(
-                        // Passes the team represented by this score button.
                         team: .teamB,
-                        // Passes the current numeric score to display.
                         score: game.scoreB,
-                        // Passes the background color associated with this team.
                         color: .blue
                     )
-                    // Clips Team B's score panel to its rounded rectangle.
                     .clipShape(
-                        // Uses the same smooth rounded rectangle as Team A's panel.
                         RoundedRectangle(cornerRadius: 4, style: .continuous)
                     )
                 }
-                // Proposes size and alignment constraints for this view.
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-            // Adds empty space between the score interface and the screen's horizontal edges.
             .padding(.horizontal, 4)
 
-            // Creates the Undo wedge at the lower-right edge of the entire Watch screen.
             Button {
-                // Restores the state from before the most recent point.
                 game.undoLastPoint()
                 // Plays tactile confirmation that Undo succeeded.
                 Haptics.undo()
             } label: {
-                // Layers the wedge fill, curved border, and Undo symbol.
                 ZStack {
                     // Reads the fixed square used to reveal one quarter of the larger circle.
                     GeometryReader { geometry in
@@ -259,92 +246,56 @@ struct ScoreView: View {
                         .font(.title2)
                         .offset(x: 25, y: 25)
                 }
-                // Anchors the circle's geometry at the lower-right corner without limiting its drawing.
                 .frame(width: 60, height: 60)
             }
-            // Prevents watchOS from drawing a second system button background.
             .buttonStyle(.plain)
             // Lowers the complete circular control so the physical Watch edge clips its bottom.
             .offset(x: -20, y: 10)
-            // Disables Undo when no previous scoring state exists.
             .disabled(!game.canUndo)
-            // Provides a concise spoken name for VoiceOver.
             .accessibilityLabel("Undo last point")
-            // Explains to VoiceOver users what activating the control will do.
             .accessibilityHint("Restores the score before the most recent point")
         }
     }
 
-    // Declares a private helper function that returns a reusable score-button view.
     private func scoreButton(
-        // Passes the team represented by this score button.
         team: Team,
-        // Passes the current numeric score to display.
         score: Int,
-        // Passes the background color associated with this team.
         color: Color
-    // Ends the parameter list and declares that the function returns an opaque SwiftUI view.
     ) -> some View {
-        // Creates a button and begins the closure that runs when the user taps it.
         Button {
-            // Captures the current completed-game count so the code can detect whether this tap finished a game.
             let completedGameCount = game.completedGames.count
-            // Tells the game model that this team won a point.
             game.pointWon(by: team)
 
             // Checks whether scoring this point completed the entire match.
             if game.matchPhase == .awaitingConfirmation {
-                // Plays the success haptic used for a completed match.
                 Haptics.matchCompleted()
-            // Otherwise, checks whether the point increased the completed-game count.
+            // Else if completed a game
             } else if game.completedGames.count > completedGameCount {
-                // Plays an upward-direction haptic to signal a completed game.
                 Haptics.gameCompleted()
-            // Begins the fallback branch when the preceding conditions are false.
             } else {
-                // Plays a light click for an ordinary scored point.
                 Haptics.pointScored()
             }
-        // Ends the action or destination closure and begins the closure that describes the control’s visible label.
         } label: {
-            // Arranges the enclosed child views vertically.
             VStack(spacing: 2) {
-                // Creates a SwiftUI text view from the supplied string or value.
                 Text(team.displayName)
-                    // Applies the specified semantic system font style.
                     .font(.caption2)
-                    // Changes the text weight to make it visually stronger.
                     .fontWeight(.semibold)
 
-                // Creates a SwiftUI text view from the supplied string or value.
                 Text("\(score)")
-                    // Applies the specified semantic system font style.
                     .font(.title)
-                    // Changes the text weight to make it visually stronger.
                     .fontWeight(.bold)
-                    // Uses equal-width digits so changing scores do not make the layout jump.
                     .monospacedDigit()
             }
-            // Sets the foreground color or material for this view and its descendants.
             .foregroundStyle(.white)
-            // Proposes size and alignment constraints for this view.
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            // Defines the shape SwiftUI uses for hit testing this control.
             .contentShape(Rectangle())
-            // Draws the specified color or style behind the view’s current bounds.
             .background(color)
         }
-        // Applies the specified visual and interaction style to the button.
         .buttonStyle(ScorePanelButtonStyle())
-        // Proposes size and alignment constraints for this view.
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        // Disables interaction when this Boolean condition evaluates to true.
         .disabled(game.matchPhase != .playing)
-        // Provides a concise spoken name for VoiceOver.
         .accessibilityLabel(team.displayName)
-        // Provides VoiceOver with the control’s current value.
         .accessibilityValue("\(score) points")
-        // Explains to VoiceOver users what activating the control will do.
         .accessibilityHint("Adds one point")
     }
 }
