@@ -17,9 +17,11 @@ struct ScoreTrackerApp: App {
     }
 }
 
+// allows for ui preview in xcode
 #Preview() {
     HomeView()
 }
+
 struct HomeView: View {
     @State private var game = GameState()
     @State private var numsGames: NumGames = .bo3
