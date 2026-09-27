@@ -22,6 +22,7 @@ struct ScoreTrackerApp: App {
     HomeView()
 }
 
+// Starting screen. Prompts match setup or viewing match history
 struct HomeView: View {
     @State private var game = GameState()
     @State private var numsGames: NumGames = .bo3
