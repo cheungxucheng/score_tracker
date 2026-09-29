@@ -161,102 +161,109 @@ struct ScoreView: View {
 
     var body: some View {
         // Layers the screen-level Undo wedge above the normal score interface.
-        ZStack(alignment: .bottomTrailing) {
-            VStack(spacing: 4) {
-                HStack(spacing: 6) {
-                    Text("Game \(game.gameNum)")
-                        .font(.caption2)
-                        .fontWeight(.semibold)
-                    
-                    if !completedScores.isEmpty {
-                        // Adds flexible empty space that pushes neighboring content apart.
-                        Spacer(minLength: 2)
-                        Text(completedScores)
+        GeometryReader { geometry in
+            let compact: Bool = geometry.size.width < 190
+            ZStack(alignment: .bottomTrailing) {
+                VStack(spacing: 4) {
+                    HStack(spacing: 6) {
+                        Text("Game \(game.gameNum)")
                             .font(.caption2)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.65)
+                            .fontWeight(.semibold)
+                        
+                        if !completedScores.isEmpty {
+                            // Adds flexible empty space that pushes neighboring content apart.
+                            Spacer(minLength: 2)
+                            Text(completedScores)
+                                .font(.caption2)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.65)
+                        }
                     }
-                }
-                .foregroundStyle(.primary)
-                .frame(maxWidth: .infinity)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 3)
-                .background(.gray.opacity(0.3))
-                .clipShape(Capsule())
-                .accessibilityElement(children: .combine)
-                
-                VStack(spacing: 2) {
-                    scoreButton(
-                        team: .teamA,
-                        score: game.scoreA,
-                        color: .red
-                    )
-                    .clipShape(
-                        RoundedRectangle(cornerRadius: 4, style: .continuous)
-                    )
+                    .foregroundStyle(.primary)
+                    .frame(maxWidth: .infinity)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
+                    .background(.gray.opacity(0.3))
+                    .clipShape(Capsule())
+                    .accessibilityElement(children: .combine)
                     
-                    scoreButton(
-                        team: .teamB,
-                        score: game.scoreB,
-                        color: .blue
-                    )
-                    .clipShape(
-                        RoundedRectangle(cornerRadius: 4, style: .continuous)
-                    )
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            }
-            .padding(.horizontal, 4)
-
-            Button {
-                game.undoLastPoint()
-                // Plays tactile confirmation that Undo succeeded.
-                Haptics.undo()
-            } label: {
-                ZStack {
-                    // Reads the fixed square used to reveal one quarter of the larger circle.
-                    GeometryReader { geometry in
-                        // Draws a circle whose center sits at the square's bottom-right corner.
-                        Circle()
-                            // Makes the active wedge prominent and the unavailable wedge subdued.
-                            .fill(.gray.opacity(game.canUndo ? 0.9 : 0.9))
-                            // Makes the circle twice the width and height of the visible square.
-                            .frame(
-                                width: geometry.size.width * 1,
-                                height: geometry.size.height * 1
-                            )
-                            // Places the circle's center on the screen's lower-right corner.
-                            .position(
-                                x: geometry.size.width,
-                                y: geometry.size.height
-                            )
-
-                        // Draws the same quarter-circle geometry as a subtle dividing line.
-                        Circle()
-                            .stroke(.white.opacity(0.25), lineWidth: 1)
-                            .frame(
-                                width: geometry.size.width * 1,
-                                height: geometry.size.height * 1
-                            )
-                            .position(
-                                x: geometry.size.width,
-                                y: geometry.size.height
-                            )
+                    VStack(spacing: 2) {
+                        scoreButton(
+                            team: .teamA,
+                            score: game.scoreA,
+                            color: .red
+                        )
+                        .clipShape(
+                            RoundedRectangle(cornerRadius: 4, style: .continuous)
+                        )
+                        
+                        scoreButton(
+                            team: .teamB,
+                            score: game.scoreB,
+                            color: .blue
+                        )
+                        .clipShape(
+                            RoundedRectangle(cornerRadius: 4, style: .continuous)
+                        )
                     }
-
-                    // Displays the Undo symbol near the visual center of the wedge.
-                    Image(systemName: "arrow.uturn.backward")
-                        .font(.title2)
-                        .offset(x: 25, y: 25)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
-                .frame(width: 60, height: 60)
+                .padding(.horizontal, 4)
+                
+                Button {
+                    game.undoLastPoint()
+                    // Plays tactile confirmation that Undo succeeded.
+                    Haptics.undo()
+                } label: {
+                    ZStack {
+                        // Reads the fixed square used to reveal one quarter of the larger circle.
+                        GeometryReader { geometry in
+                            
+                            let x: CGFloat = compact ? geometry.size.width * 1.1 : geometry.size.width
+                            let y: CGFloat = compact ? geometry.size.height * 0.85 : geometry.size.height
+                            
+                            // Draws a circle whose center sits at the square's bottom-right corner.
+                            Circle()
+                            // Makes the active wedge prominent and the unavailable wedge subdued.
+                                .fill(.gray.opacity(game.canUndo ? 1 : 0.9))
+                            // Makes the circle twice the width and height of the visible square.
+                                .frame(
+                                    width: geometry.size.width * 1,
+                                    height: geometry.size.height * 1
+                                )
+                            // Places the circle's center on the screen's lower-right corner.
+                                .position(
+                                    x: x,
+                                    y: y
+                                )
+                            
+                            // Draws the same quarter-circle geometry as a subtle dividing line.
+                            Circle()
+                                .stroke(.white.opacity(0.25), lineWidth: 1)
+                                .frame(
+                                    width: geometry.size.width * 1,
+                                    height: geometry.size.height * 1
+                                )
+                                .position(
+                                    x: x,
+                                    y: y
+                                )
+                        }
+                        
+                        // Displays the Undo symbol near the visual center of the wedge.
+                        Image(systemName: "arrow.uturn.backward")
+                            .font(.title2)
+                            .offset(x: compact ? 30 : 25, y: compact ? 10 : 25)
+                    }
+                    .frame(width: 60, height: 60)
+                }
+                .buttonStyle(.plain)
+                // Lowers the complete circular control so the physical Watch edge clips its bottom.
+                .offset(x: -20, y: 10)
+                .disabled(!game.canUndo)
+                .accessibilityLabel("Undo last point")
+                .accessibilityHint("Restores the score before the most recent point")
             }
-            .buttonStyle(.plain)
-            // Lowers the complete circular control so the physical Watch edge clips its bottom.
-            .offset(x: -20, y: 10)
-            .disabled(!game.canUndo)
-            .accessibilityLabel("Undo last point")
-            .accessibilityHint("Restores the score before the most recent point")
         }
     }
 
