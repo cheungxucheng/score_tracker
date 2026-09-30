@@ -7,7 +7,7 @@ enum NumGames: Int, CaseIterable, Identifiable {
     case bo5 = 5
     
     var id: Int {self.rawValue}
-    var gamesNeededToWin: Int {(rawValue / 2)}
+    var gamesNeededToWin: Int {(rawValue / 2) + 1}
 }
 
 enum Team: String, Codable, CaseIterable, Equatable {
