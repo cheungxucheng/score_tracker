@@ -408,7 +408,7 @@ struct MatchHistoryView: View {
                 }
                 .disabled(game.matchHistory.isEmpty)
                 .opacity(game.hasActiveMatchProgress ? 0 : 1)
-                .accessibilityHidden(!game.matchHistory.isEmpty)
+                .accessibilityHidden(game.matchHistory.isEmpty || game.match.hasActiveMatchProgress)
             }
         }
         .confirmationDialog(
